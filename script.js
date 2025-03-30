@@ -167,6 +167,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const baseFare = document.getElementById('base-fare');
         const distance = document.getElementById('distance');
         const taxAmount = document.getElementById('tax-amount');
+            console.log('Calculator elements:', {
+        btn: calculateFareBtn,
+        pickup: pickupLocation,
+        drop: dropLocation,
+        vehicle: vehicleType,
+        journey: journeyType
+    });
+    
+    // Ensure elements exist before adding event listeners
+    if (!calculateFareBtn || !pickupLocation || !dropLocation || !vehicleType || !journeyType) {
+        console.error('One or more tariff calculator elements not found');
+        return;
+    }
+    
 
         // Update vehicle options when journey type changes
         if (journeyType) {
@@ -193,7 +207,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 calculateFare();
             });
+                calculateFareBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        calculateFare();
+    });
         }
+            calculateFareBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        calculateFare();
+    });
 
         function calculateFare() {
             const pickup = pickupLocation.value;
