@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const BOOKING_FORM_URL = "https://formsubmit.co/ajax/" + OWNER_EMAIL;
     const CONTACT_FORM_URL = "https://formsubmit.co/ajax/" + OWNER_EMAIL;
     
+    
     // Distance data for routes (in km)
     const routeDistances = {
         pondicherry: {
@@ -629,38 +630,132 @@ Pondy DropTaxi Team`;
         return vehicleMap[vehicleValue] || vehicleValue;
     }
 });
-  // Theme toggle functionality
-  const themeToggle = document.getElementById('theme-toggle');
-  const themeIcon = themeToggle.querySelector('i');
-  
-  // Check for saved theme preference or use device preference
-  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-  const savedTheme = localStorage.getItem('theme');
-  
-  if (savedTheme === 'dark' || (savedTheme === null && prefersDarkScheme.matches)) {
+
+// Google Maps Integration
+let map;
+let directionsService;
+let directionsRenderer;
+let pickupAutocomplete;
+let dropAutocomplete;
+
+function initializeMap() {
+    // Initialize map centered on Pondicherry
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 11.9416, lng: 79.8083 },
+        zoom: 13
+    });
+
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map);
+
+    // Initialize autocomplete for pickup and drop locations
+    pickupAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('pickup-location')
+    );
+    dropAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('drop-location')
+    );
+
+    // Add listeners
+    document.getElementById('calculate-fare').addEventListener('click', calculateFare);
+}
+
+async function calculateFare() {
+    const pickup = document.getElementById('pickup-location').value;
+    const drop = document.getElementById('drop-location').value;
+    const vehicleSelect = document.getElementById('vehicle-type');
+    const journeyType = document.getElementById('journey-type').value;
+    
+    if (!pickup || !drop || !vehicleSelect.value) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
+    const ratePerKm = parseFloat(selectedOption.dataset.rate);
+
+    try {
+        const route = await getRoute(pickup, drop);
+        const distanceInKm = route.distance.value / 1000;
+        const multiplier = journeyType === 'round_trip' ? 2 : 1;
+        
+        let baseFare = distanceInKm * ratePerKm * multiplier;
+        const gst = baseFare * 0.05;
+        const totalFare = baseFare + gst;
+
+        // Update fare display
+        document.getElementById('distance').textContent = `${distanceInKm.toFixed(2)} km`;
+        document.getElementById('base-fare').textContent = `₹ ${baseFare.toFixed(2)}`;
+        document.getElementById('tax-amount').textContent = `₹ ${gst.toFixed(2)}`;
+        document.getElementById('fare-amount').textContent = `₹ ${totalFare.toFixed(2)}`;
+
+        // Draw route on map
+        directionsRenderer.setDirections(route.rawResponse);
+    } catch (error) {
+        alert('Error calculating route. Please try again.');
+        console.error(error);
+    }
+}
+
+function getRoute(origin, destination) {
+    return new Promise((resolve, reject) => {
+        directionsService.route(
+            {
+                origin: origin,
+                destination: destination,
+                travelMode: 'DRIVING'
+            },
+            (result, status) => {
+                if (status === 'OK') {
+                    resolve({
+                        distance: result.routes[0].legs[0].distance,
+                        duration: result.routes[0].legs[0].duration,
+                        rawResponse: result
+                    });
+                } else {
+                    reject(status);
+                }
+            }
+        );
+    });
+}
+
+// Initialize map when the page loads
+window.addEventListener('load', initializeMap);
+
+// Theme toggle functionality
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = themeToggle.querySelector('i');
+
+// Check for saved theme preference or use device preference
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+const savedTheme = localStorage.getItem('theme');
+
+if (savedTheme === 'dark' || (savedTheme === null && prefersDarkScheme.matches)) {
     document.body.setAttribute('data-theme', 'dark');
     themeIcon.classList.replace('fa-moon', 'fa-sun');
-  }
-  
-  themeToggle.addEventListener('click', () => {
-    if (document.body.getAttribute('data-theme') === 'dark') {
-      document.body.removeAttribute('data-theme');
-      localStorage.setItem('theme', 'light');
-      themeIcon.classList.replace('fa-sun', 'fa-moon');
-    } else {
-      document.body.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-      themeIcon.classList.replace('fa-moon', 'fa-sun');
-    }
-  });
+}
 
-  // Back to top button
-  const backToTopButton = document.querySelector('.back-to-top');
-  
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-      backToTopButton.classList.add('visible');
+themeToggle.addEventListener('click', () => {
+    if (document.body.getAttribute('data-theme') === 'dark') {
+        document.body.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        themeIcon.classList.replace('fa-sun', 'fa-moon');
     } else {
-      backToTopButton.classList.remove('visible');
+        document.body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        themeIcon.classList.replace('fa-moon', 'fa-sun');
     }
-  });
+});
+
+// Back to top button
+const backToTopButton = document.querySelector('.back-to-top');
+
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+        backToTopButton.classList.add('visible');
+    } else {
+        backToTopButton.classList.remove('visible');
+    }
+});

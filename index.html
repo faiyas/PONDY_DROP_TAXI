@@ -11,6 +11,7 @@
     />
     <!-- Add this for form validation styling -->
     <link rel="stylesheet" href="form-validation.css" />
+    <script src="https://maps.googleapis.com/maps/api/js?key= AIzaSyB5JPcdPu6ya3526m1Wb89WoakE9s5csF4 &libraries=places"></script>
   </head>
   <body>
     <!-- Header -->
@@ -139,36 +140,38 @@
           <div class="calculator-form">
             <div class="form-group">
               <label for="pickup-location">Pickup Location</label>
-              <select id="pickup-location" required>
-                <option value="">Select Pickup Location</option>
-                <option value="pondicherry">Pondicherry</option>
-                <option value="auroville">Auroville</option>
-                <option value="chennai_airport">Chennai Airport</option>
-                <option value="chennai_city">Chennai City</option>
-                <option value="kottakuppam">Kottakuppam</option>
-              </select>
+              <input
+                type="text"
+                id="pickup-location"
+                placeholder="Enter pickup location"
+                required
+              />
             </div>
             <div class="form-group">
               <label for="drop-location">Drop Location</label>
-              <select id="drop-location" required>
-                <option value="">Select Drop Location</option>
-                <option value="pondicherry">Pondicherry</option>
-                <option value="auroville">Auroville</option>
-                <option value="chennai_airport">Chennai Airport</option>
-                <option value="chennai_city">Chennai City</option>
-                <option value="mahabalipuram">Mahabalipuram</option>
-                <option value="thanjavur">Thanjavur</option>
-                <option value="kottakuppam">Kottakuppam</option>
-              </select>
+              <input
+                type="text"
+                id="drop-location"
+                placeholder="Enter drop location"
+                required
+              />
             </div>
             <div class="form-group">
               <label for="vehicle-type">Vehicle Type</label>
               <select id="vehicle-type" required>
                 <option value="">Select Vehicle Type</option>
-                <option value="sedan">Sedan (4 Seater)</option>
-                <option value="suv">SUV (6 Seater)</option>
-                <option value="tempo">Tempo Traveller (12 Seater)</option>
-                <option value="bus">Mini Bus (20 Seater)</option>
+                <option value="sedan" data-rate="12">
+                  Sedan (4 Seater) - ₹12/km
+                </option>
+                <option value="suv" data-rate="16">
+                  SUV (6 Seater) - ₹16/km
+                </option>
+                <option value="tempo" data-rate="22">
+                  Tempo Traveller (12 Seater) - ₹22/km
+                </option>
+                <option value="bus" data-rate="35">
+                  Mini Bus (20 Seater) - ₹35/km
+                </option>
               </select>
             </div>
             <div class="form-group">
@@ -182,15 +185,16 @@
               Calculate Fare
             </button>
           </div>
-          <div class="fare-display">
-            <div class="fare-result">
-              <h3>Estimated Fare</h3>
-              <div id="fare-amount">₹ 0.00</div>
-              <div id="fare-details">
-                <p>Base Fare: <span id="base-fare">₹ 0.00</span></p>
-                <p>Distance: <span id="distance">0 km</span></p>
-                <p>GST (5%): <span id="tax-amount">₹ 0.00</span></p>
-              </div>
+          <div id="map" style="height: 300px; margin: 20px 0"></div>
+        </div>
+        <div class="fare-display">
+          <div class="fare-result">
+            <h3>Estimated Fare</h3>
+            <div id="fare-amount">₹ 0.00</div>
+            <div id="fare-details">
+              <p>Base Fare: <span id="base-fare">₹ 0.00</span></p>
+              <p>Distance: <span id="distance">0 km</span></p>
+              <p>GST (5%): <span id="tax-amount">₹ 0.00</span></p>
             </div>
           </div>
         </div>
